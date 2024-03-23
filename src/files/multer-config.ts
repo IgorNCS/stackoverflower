@@ -4,7 +4,7 @@ import { extname } from 'path';
 export const multerConfig = {
   // Configuração de armazenamento de disco
   storage: diskStorage({
-    destination: './uploads', // Diretório onde os arquivos serão salvos
+    destination: './src/public/images', // Diretório onde os arquivos serão salvos
     filename: (req, file, cb) => {
       // Gere um nome de arquivo único
       const randomName = Array(32)

@@ -32,8 +32,8 @@ export class PostController {
         { name: 'avatar', maxCount: 1 },
         { name: 'background', maxCount: 1 },
     ]))
-    uploadFile(@UploadedFiles() files: { avatar?: Express.Multer.File[], background?: Express.Multer.File[] }) {
-        console.log(files);
+    async uploadFiles(@UploadedFiles() files: { avatar?: Express.Multer.File[], background?: Express.Multer.File[] }) {
+        return this.postService.uploadFiles(files);
     }
 
 }
