@@ -7,7 +7,7 @@ export class CreatePostDto {
     text: string;
 
     @IsString()
-    imageSrc?:string;
+    imageSrc?:string[];
 
     @IsString()
     plants?:string[];

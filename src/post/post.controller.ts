@@ -9,31 +9,24 @@ import { multerConfig } from '../../src/files/multer-config';
 @Controller('post')
 export class PostController {
     constructor(private postService: PostService) { }
+
     @Post('new')
-    create(@Headers() headers, @Body() body) {
-        return this.postService.create(headers, body)
-    }
-
-    @Get('test')
-    teste() {
-        return 'ok'
-    }
-
-    //     @Post('upload')
-    //   @UseInterceptors(FileInterceptor('file'))
-    //   uploadFile(@UploadedFile() file) {
-    //     console.log(file);
-
-    //     return { filename: file.filename }; 
-    //   }
-
-    @Post('upload')
     @UseInterceptors(FileFieldsInterceptor([
-        { name: 'avatar', maxCount: 1 },
-        { name: 'background', maxCount: 1 },
+      { name: 'images', maxCount: 10 }
     ]))
-    async uploadFiles(@UploadedFiles() files: { avatar?: Express.Multer.File[], background?: Express.Multer.File[] }) {
-        return this.postService.uploadFiles(files);
+    async uploadFiles(
+      @UploadedFiles() files: { images?: Express.Multer.File[] }, 
+      @Body('content') content: string,
+      @Headers('Authorization') authToken: string,
+    ) {
+      return this.postService.create(files,content,authToken);
     }
+
+    @Get('all')
+    test(@Headers() headers){
+        return this.postService.findAll()
+    }
+
+
 
 }

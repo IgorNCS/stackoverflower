@@ -2,23 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Post } from 'src/models/Post.schema';
-import { CreatePostDto } from './dto/create-post.dto';
-import { NotFoundError, UnauthorizedError } from 'src/helpers/api-errors';
+import { UnauthorizedError } from 'src/helpers/api-errors';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { UserService } from 'src/user/user.service';
-
+import * as jwt from 'jsonwebtoken';
+import { JwtTokenDecoded } from './dto/jwt-token-decoded';
 
 @Injectable()
 export class PostService {
     constructor(@InjectModel('Post') private postModel: Model<Post>, private userService: UserService) { }
 
-    async create(headers, CreatePostDto: CreatePostDto): Promise<Post> {
-        const createdPost = new this.postModel(CreatePostDto)
-        return await createdPost.save()
-    }
-
-    async findAll(): Promise<Post[]> {
-        return this.postModel.find().exec()
+    async findAll() {
+         console.log(await this.postModel.find().exec())
+         return
+        // if (this.getUserIdByToken()) {
+        // }
     }
 
     async remove(params, token) {
@@ -31,7 +29,6 @@ export class PostService {
         } else {
             throw new UnauthorizedError('Problema no token');
         }
-
     }
 
     async isAuthor(id: string, AuthorId: string): Promise<boolean> {
@@ -51,13 +48,46 @@ export class PostService {
         } else {
             throw new UnauthorizedError('Problema no token');
         }
-
     }
 
-    async uploadFiles(files: { avatar?: Express.Multer.File[], background?: Express.Multer.File[] }) {
-        const avatarFilenames = files.avatar ? files.avatar.map(file => file.filename) : [];
-        const backgroundFilenames = files.background ? files.background.map(file => file.filename) : [];
-        // Faça a lógica de manipulação de arquivos aqui, se necessário
-        return { avatarFilenames, backgroundFilenames };
+    async getUserIdByToken(token: string): Promise<JwtTokenDecoded | undefined> {
+        try {
+            const decodedToken = await new Promise<JwtTokenDecoded>((resolve, reject) => {
+                jwt.verify(token, process.env.JWT_SECRET, (err: any, decoded: JwtTokenDecoded) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(decoded);
+                    }
+                });
+            });
+
+            return decodedToken;
+        } catch (error) {
+            console.error('Erro ao decodificar o token:', error);
+            return undefined;
+        }
+    }
+
+    async create(files: { [fieldName: string]: Express.Multer.File[] }, content: string, token: string) {
+        const filenames: { [fieldName: string]: string[] } = {};
+        const tokenId: JwtTokenDecoded | undefined = await this.getUserIdByToken(token);
+
+        for (const fieldName in files) {
+            if (Object.prototype.hasOwnProperty.call(files, fieldName)) {
+                filenames[fieldName] = files[fieldName].map(file => file.filename);
+            }
+        }
+
+        if (tokenId && tokenId.id) {
+            const createPost = {
+                imageSrc: filenames.images,
+                authorId: tokenId.id,
+                text: content
+            }
+
+            const createdPost = new this.postModel(createPost)
+            return await createdPost.save()
+        }
     }
 }

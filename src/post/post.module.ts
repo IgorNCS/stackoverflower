@@ -13,7 +13,7 @@ import { multerConfig } from '../files/multer-config';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'Post', schema: PostSchema },{ name: 'User', schema: UserSchema }]),
+    MongooseModule.forFeature([{ name: 'Post', schema: PostSchema },{ name: 'User', schema: UserSchema },]),MulterModule.register(multerConfig)
   ],
   controllers: [PostController, CommentController],
   providers: [PostService, CommentService,UserService]

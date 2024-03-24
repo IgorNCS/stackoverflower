@@ -2,8 +2,8 @@ import { Schema, Document, model } from 'mongoose';
 import { Comment } from './comment.schema'; 
 
 export const PostSchema = new Schema({
-    imageSrc: String,
-    AuthorId: String,
+    imageSrc: [String],
+    authorId: String,
     text: String,
     plants: [String],
     likes: [String],
@@ -12,8 +12,8 @@ export const PostSchema = new Schema({
 });
 
 export interface Post extends Document {
-    imageSrc: string;
-    AuthorId: string;
+    imageSrc: string[];
+    authorId: string;
     text: string;
     plants: string[];
     likes: string[];
