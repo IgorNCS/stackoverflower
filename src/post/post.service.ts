@@ -14,16 +14,15 @@ export class PostService {
 
     async findAll() {
         const posts = await this.postModel.find().exec();
-    
         // Mapeia todos os posts para substituir o ID do autor pelo nome do autor
         const updatedPosts = await Promise.all(posts.map(async (post) => {
             const authorName = await this.userService.getNameById(post.authorId);
             return { ...post.toJSON(), authorName: authorName }; // Mapeia para um novo objeto com o nome do autor
         }));
-    
+
         return updatedPosts;
     }
-    
+
 
     async remove(params, token) {
         if (this.userService.verifyToken(token)) {
@@ -84,7 +83,6 @@ export class PostService {
                 filenames[fieldName] = files[fieldName].map(file => file.filename);
             }
         }
-
         if (tokenId && tokenId.id) {
             const createPost = {
                 imageSrc: filenames.images,

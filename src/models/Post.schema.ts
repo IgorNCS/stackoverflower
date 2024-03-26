@@ -1,16 +1,6 @@
 import { Schema, Document, model } from 'mongoose';
 import { Comment } from './comment.schema'; 
 
-export const PostSchema = new Schema({
-    imageSrc: [String],
-    authorId: String,
-    text: String,
-    plants: [String],
-    likes: [String],
-    shares: [String],
-    comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }] 
-});
-
 export interface Post extends Document {
     imageSrc: string[];
     authorId: string;
@@ -18,8 +8,19 @@ export interface Post extends Document {
     plants: string[];
     likes: string[];
     shares: string[];
-    comments: Comment[]; 
+    comments: Comment[];
+    createdAt: Date; // Alterado para o tipo Date
 }
 
-// Crie e exporte o modelo para os posts
+export const PostSchema = new Schema<Post>({
+    imageSrc: [String],
+    authorId: String,
+    text: String,
+    plants: [String],
+    likes: [String],
+    shares: [String],
+    comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
+    createdAt: { type: Date, default: Date.now } // Definindo o campo createdAt com o tipo Date e valor padrão Date.now
+});
+
 export const PostModel = model<Post>('Post', PostSchema);
