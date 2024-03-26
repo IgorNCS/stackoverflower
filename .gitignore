@@ -3,6 +3,7 @@
 /node_modules
 /build
 /src/public/images
+
 # Logs
 logs
 *.log

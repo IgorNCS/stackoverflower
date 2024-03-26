@@ -23,7 +23,13 @@ export class UserService {
         return false
     };
 
-
+    async getNameById(id) {
+        const user = await this.userModel.findById(id).exec(); // Use findById para obter diretamente o usuário pelo ID
+        if (!user) {
+            throw new Error('Usuário não encontrado');
+        }
+        return user.name; // Retorna o nome do usuário
+    }
 
     async create(createUserDto: CreateUserDto): Promise<User> {
         if (!await this.hasEmail(createUserDto.email)) {

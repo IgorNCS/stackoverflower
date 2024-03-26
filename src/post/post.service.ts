@@ -13,11 +13,17 @@ export class PostService {
     constructor(@InjectModel('Post') private postModel: Model<Post>, private userService: UserService) { }
 
     async findAll() {
-         console.log(await this.postModel.find().exec())
-         return
-        // if (this.getUserIdByToken()) {
-        // }
+        const posts = await this.postModel.find().exec();
+    
+        // Mapeia todos os posts para substituir o ID do autor pelo nome do autor
+        const updatedPosts = await Promise.all(posts.map(async (post) => {
+            const authorName = await this.userService.getNameById(post.authorId);
+            return { ...post.toJSON(), authorName: authorName }; // Mapeia para um novo objeto com o nome do autor
+        }));
+    
+        return updatedPosts;
     }
+    
 
     async remove(params, token) {
         if (this.userService.verifyToken(token)) {

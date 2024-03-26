@@ -1,8 +1,10 @@
-import { Body, Controller, Post, Headers, Get, UseInterceptors, UploadedFile, UploadedFiles } from '@nestjs/common';
+import { Body, Controller, Post, Headers, Get, UseInterceptors, UploadedFile, UploadedFiles, Param, Res } from '@nestjs/common';
 import { PostService } from './post.service';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express'
 import { multerConfig } from '../../src/files/multer-config';
+import { join } from 'path';
+import { Response } from 'express';
 
 
 
@@ -26,6 +28,13 @@ export class PostController {
     test(@Headers() headers){
         return this.postService.findAll()
     }
+
+    @Get(':filename')
+    async serveImage(@Param('filename') filename: string, @Res() res: Response) {
+      // return res.sendFile(filename, { root: join(__dirname, '..', 'public', 'images') });
+      return res.sendFile(filename, { root: join('./src/public/images') })
+    }
+  
 
 
 
