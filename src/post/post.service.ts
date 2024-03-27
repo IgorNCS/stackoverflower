@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Post } from 'src/models/Post.schema';
@@ -16,12 +16,37 @@ export class PostService {
         const posts = await this.postModel.find().exec();
         // Mapeia todos os posts para substituir o ID do autor pelo nome do autor
         const updatedPosts = await Promise.all(posts.map(async (post) => {
+            await console.log(post)
             const authorName = await this.userService.getNameById(post.authorId);
-            return { ...post.toJSON(), authorName: authorName }; // Mapeia para um novo objeto com o nome do autor
+            const updatedComments = await Promise.all(post.comments.map(async (comment) => {
+                comment.authorCommentName = await this.userService.getNameById(comment.authorId);
+            comment.authorCommentImage = await this.userService.getProfileImageById(comment.authorId);
+            console.log(comment)
+            return comment; // Retorna o comentário com as novas propriedades adicionadas
+                const authorCommentName = await this.userService.getNameById(comment.authorId);
+                const authorCommentImage = await this.userService.getProfileImageById(comment.authorId);
+                return { ...comment.toJSON(), authorCommentName, authorCommentImage };
+            }));
+            return { ...post.toJSON(), authorName, comments: updatedComments }; // Atualiza os comentários
         }));
-
+        console.log(updatedPosts[0])
         return updatedPosts;
     }
+
+    async findPostById(postId){
+        const post = await this.postModel.findById(postId);
+        if (!post) {
+            throw new NotFoundException('Post não encontrado');
+        }
+        return post
+    }
+
+    async addComment(comment, postId) {
+        const post = await this.findPostById(postId);
+        post.comments.push(comment._id);
+        return post.save();
+    }
+    
 
 
     async remove(params, token) {

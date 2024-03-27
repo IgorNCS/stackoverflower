@@ -8,6 +8,7 @@ import { CreateUserDto } from './dto/create-user-dto';
 import * as jwt from 'jsonwebtoken';
 import { response } from 'express';
 import { LoginUserDto } from './dto/login-user.dto';
+import { JwtTokenDecoded } from 'src/post/dto/jwt-token-decoded';
 
 
 @Injectable()
@@ -26,9 +27,36 @@ export class UserService {
     async getNameById(id) {
         const user = await this.userModel.findById(id).exec(); // Use findById para obter diretamente o usuário pelo ID
         if (!user) {
-            throw new Error('Usuário não encontrado');
+            return undefined
         }
         return user.name; // Retorna o nome do usuário
+    }
+
+    async getProfileImageById(id) {
+        const user = await this.userModel.findById(id).exec(); // Use findById para obter diretamente o usuário pelo ID
+        if (!user) {
+            return undefined
+        }
+        return user.profileImage; // Retorna o nome do usuário
+    }
+
+    async getUserIdByToken(token: string): Promise<JwtTokenDecoded | undefined> {
+        try {
+            const decodedToken = await new Promise<JwtTokenDecoded>((resolve, reject) => {
+                jwt.verify(token, process.env.JWT_SECRET, (err: any, decoded: JwtTokenDecoded) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(decoded);
+                    }
+                });
+            });
+
+            return decodedToken;
+        } catch (error) {
+            console.error('Erro ao decodificar o token:', error);
+            return undefined;
+        }
     }
 
     async create(createUserDto: CreateUserDto): Promise<User> {
@@ -61,7 +89,6 @@ export class UserService {
 
                 return token;
             } else {
-                console.log('a')
                 throw new HttpException({
                     status: HttpStatus.BAD_REQUEST,
                     errorCode: 'IncorrectPassword',
