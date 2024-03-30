@@ -10,12 +10,13 @@ export class CommentController {
     create(@Body() body: any, @Headers() headers: any) {
         const { content, postId } = body;
         const authToken = headers.authorization; 
-
+        console.log('a')
         return this.commentService.create({ content, postId, authToken });
     }
 
     @Get('all')
     test(@Headers() headers){
+        console.log('b')
         return 'ok'
     }
 }

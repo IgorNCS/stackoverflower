@@ -7,33 +7,29 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { UserService } from 'src/user/user.service';
 import * as jwt from 'jsonwebtoken';
 import { JwtTokenDecoded } from './dto/jwt-token-decoded';
+import { Comment } from 'src/models/comment.schema';
 
 @Injectable()
 export class PostService {
-    constructor(@InjectModel('Post') private postModel: Model<Post>, private userService: UserService) { }
-
+    constructor(@InjectModel('Post') private postModel: Model<Post>, @InjectModel('Comment') private commentModel: Model<Comment>, private userService: UserService) { }
+    
     async findAll() {
         const posts = await this.postModel.find().exec();
-        // Mapeia todos os posts para substituir o ID do autor pelo nome do autor
         const updatedPosts = await Promise.all(posts.map(async (post) => {
-            await console.log(post)
             const authorName = await this.userService.getNameById(post.authorId);
-            const updatedComments = await Promise.all(post.comments.map(async (comment) => {
-                comment.authorCommentName = await this.userService.getNameById(comment.authorId);
-            comment.authorCommentImage = await this.userService.getProfileImageById(comment.authorId);
-            console.log(comment)
-            return comment; // Retorna o comentário com as novas propriedades adicionadas
+            const updatedComments = await Promise.all(post.comments.map(async (commentId) => {
+                const comment = await this.commentModel.findById(commentId); // Busca o comentário pelo ID
                 const authorCommentName = await this.userService.getNameById(comment.authorId);
                 const authorCommentImage = await this.userService.getProfileImageById(comment.authorId);
                 return { ...comment.toJSON(), authorCommentName, authorCommentImage };
             }));
-            return { ...post.toJSON(), authorName, comments: updatedComments }; // Atualiza os comentários
+            return { ...post.toJSON(), authorName, comments: updatedComments };
         }));
-        console.log(updatedPosts[0])
         return updatedPosts;
     }
 
-    async findPostById(postId){
+
+    async findPostById(postId) {
         const post = await this.postModel.findById(postId);
         if (!post) {
             throw new NotFoundException('Post não encontrado');
@@ -46,7 +42,7 @@ export class PostService {
         post.comments.push(comment._id);
         return post.save();
     }
-    
+
 
 
     async remove(params, token) {
