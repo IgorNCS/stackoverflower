@@ -29,6 +29,11 @@ export class PostController {
         return this.postService.findAll()
     }
 
+    @Get(':postId')
+    onePost(@Headers() header,@Param('postId') postId: string){
+      return this.postService.findOneToPost(postId)
+    }
+
     @Get(':filename')
     async serveImage(@Param('filename') filename: string, @Res() res: Response) {
       // return res.sendFile(filename, { root: join(__dirname, '..', 'public', 'images') });

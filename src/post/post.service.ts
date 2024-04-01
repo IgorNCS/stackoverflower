@@ -29,6 +29,21 @@ export class PostService {
     }
 
 
+    async findOneToPost(postId) {
+        const post = await this.postModel.findById(postId).exec();
+        // console.log(params)
+            const authorName = await this.userService.getNameById(post.authorId)||'ze';
+            const updatedComments = await Promise.all(post.comments.map(async (commentId) => {
+                const comment = await this.commentModel.findById(commentId); // Busca o comentário pelo ID
+                const authorCommentName = await this.userService.getNameById(comment.authorId);
+                const authorCommentImage = await this.userService.getProfileImageById(comment.authorId);
+                return { ...comment.toJSON(), authorCommentName, authorCommentImage };
+            }));
+            return { ...post.toJSON(), authorName, comments: updatedComments };
+
+    }
+
+
     async findPostById(postId) {
         const post = await this.postModel.findById(postId);
         if (!post) {

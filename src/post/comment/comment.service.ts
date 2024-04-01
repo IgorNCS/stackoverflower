@@ -15,8 +15,7 @@ export class CommentService {
     
         if (!user || !post) {
             throw new NotFoundException('Usuário ou post não encontrado');
-        }
-    
+        }  
         const newComment = new this.commentModel({
             postId: params.postId,
             authorId: user.id,
@@ -26,9 +25,9 @@ export class CommentService {
         const savedComment = await newComment.save();
     
         post.comments.push(savedComment._id);
-        await post.save();
-    
-        return savedComment;
+        const posteSaved = await post.save();
+        
+        return await this.postService.findOneToPost(posteSaved._id);
     }
 }
 
